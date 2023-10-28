@@ -23,7 +23,7 @@ for sheet_name in sheet_names:
 
 names = []
 crops = []
-for sh_name in sheets:
+for sh_name in sheets[1:]:
     df = other_file.parse(sh_name)
     names.append(df.columns[0])
     if sh_name == 'Season A':
@@ -37,31 +37,55 @@ years = list(set(years))
 indicators = list(set(indicators))
 names = list(set(names))
 
+p2 = """
+This report highlights the findings of the Seasonal Agricultural Survey (SAS) for the agricultural year 
+2021/2022. It covers three agricultural seasons; Season A which starts from September to February of the 
+following year and Season B which starts from March to June. Season C is the shortest agricultural season 
+with vegetables and sweet potato predominantly grown in swamps and Irish potato mostly grown in the 
+volcanic agro-ecological zone. This report, therefore, consolidates the findings of all seasons and hence, 
+highlights the findings mainly related to:
+"""
+p1 = """
+Agriculture plays a pivotal role in Rwanda's economic growth, and it is a key focus of the national development strategy. 
+The government has set an ambitious agenda for agricultural transformation, aiming to shift from low productivity to knowledge-driven, value-added, 
+and commercialized agriculture. Accurate agricultural statistics are crucial for monitoring national programs and making informed decisions. 
+The National Institute of Statistics of Rwanda, in partnership with the Ministry of Agriculture and Animal Resources, conducts the Seasonal 
+Agricultural Survey (SAS) to gather vital agricultural information.
+"""
+item_list = [
+    "Land use", "Crop land", "Crop production",
+    "Crop yield", "Use of inputs", "Agricultural practices"
+]
 # Define the layout of the web application
 app.layout = html.Div([
-    html.Div(children='Summary of Seasonal Agricultural Survey'),
-    dcc.Dropdown(
-        id='year-dropdown',
-        options=[{'label': year, 'value': year} for year in years],
-        value=years[0]
-    ),
+    html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)', style={'textAlign':'center'}),
+    html.H3(children='EXECUTIVE SUMMARY', style={'textAlign':'center'}),
+    html.Div([
+        html.P(p1),
+        html.P(p2),
+        html.Ul([
+            html.Li(item) for item in item_list
+        ]),
+        html.P("The bar chart below illustrates the summary of Seasonal Agricultural Survey main indicators for the last three years.")
+    ]),
+    html.Label('Choose year:'),
+    dcc.RadioItems(options=years, value=years[0], inline=True, id='year-dropdown'),
+    html.Label('Choose the indicator of your interest:'),
     dcc.Dropdown(
         id='indicator-dropdown',
         options=[{'label': indicator, 'value': indicator} for indicator in indicators],
         value=indicators[0]
     ),
     dcc.Graph(figure={}, id='bar-chart-1'),
-    
-    dcc.Dropdown(
-        id='years-dropdown',
-        options=[{'label': 2021, 'value': 2021}, {'label': 2022, 'value': 2022}],
-        value=2021
-    ),
+    html.Label('Choose year:'),
+    dcc.RadioItems(options=[2021, 2022], value=2021, inline=True, id='years-dropdown'),
+    html.Label('Choose the data of your interest:'),
     dcc.Dropdown(
         id='names',
         options=[{'label': name, 'value': name} for name in names],
         value=names[0]
     ),
+    html.Label('Choose the crop of your interest:'),
     dcc.Dropdown(
         id='crops',
         options=[{'label': crop, 'value': crop} for crop in crops],
@@ -76,20 +100,30 @@ app.layout = html.Div([
     [Input('year-dropdown', 'value'), Input('indicator-dropdown', 'value')]
 )
 def chart_updater(chosen_year, chosen_indicator):
+    figure = make_subplots(rows=1, cols=2, specs=[[{'type': 'xy'}, {'type': 'xy'}]], subplot_titles=("Indicator", "Rwanda Land cover classes"))
     for sheet_name in sheet_names:
         df = excel_file.parse(sheet_name)
         if df.columns[0] == chosen_indicator and df.columns[4] == chosen_year:
             break
 
     # Create a bar chart with multiple y-values
-    figure1 = px.bar(df, x=df.columns[0], y=[df.columns[1], df.columns[2], df.columns[3]], 
-                     labels={df.columns[0]: 'Major Crops', 
-                             df.columns[1]: 'Cultivated area in Season A', 
-                             df.columns[2]: 'Cultivated area in Season B', 
-                             df.columns[3]: 'Cultivated area in Season C'},
-                     title=f'{chosen_year} - {chosen_indicator} in Seasons A, B, and C')
+    season_A = go.Bar(x=df[df.columns[0]], y=df[df.columns[1]], name=df.columns[1])
+    season_B = go.Bar(x=df[df.columns[0]], y=df[df.columns[2]], name=df.columns[2])
+    season_C = go.Bar(x=df[df.columns[0]], y=df[df.columns[3]], name=df.columns[3])
 
-    return figure1
+    # Add the traces to the subplots
+    figure.add_trace(season_A, row=1, col=1)
+    figure.add_trace(season_B, row=1, col=1)
+    figure.add_trace(season_C, row=1, col=1)
+
+    df2 = other_file.parse('Sheet1')
+    figure2 = go.Bar(x=df2[df2.columns[0]], y=df2[df2.columns[1]])
+    
+    figure.add_trace(figure2, row=1, col=2)
+    figure.update_layout(
+        title_text=f'{chosen_year} - {chosen_indicator} in Seasons A, B, and C'
+    )
+    return figure
 
 @app.callback(
     Output('pie-charts-1', 'figure'),

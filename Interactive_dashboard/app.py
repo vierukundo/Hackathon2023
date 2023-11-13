@@ -4,6 +4,8 @@ import plotly.express as px
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import json
+import numpy as np
 
 # Read the Excel file and get sheet names
 excel_file = pd.ExcelFile('Summary of SAS.xlsx')
@@ -14,6 +16,18 @@ sheets = other_file.sheet_names
 
 detailed_file = pd.ExcelFile('Detailed_sas_file.xlsx')
 detailed_sheets = detailed_file.sheet_names
+
+
+# read the Rwanda geojson file
+with open('rwanda_geojson.geojson', 'r') as f:
+    Rwanda_districts = json.load(f)
+
+district_id_map = {}
+for feature in Rwanda_districts['features']:
+    feature['id'] = str(feature['properties']['ID_2'])
+    district_id_map[feature['properties']['NAME_2']] = feature['id']  # Convert to string
+
+
 # Initialize lists for indicators and years
 indicators = []
 years = []
@@ -24,12 +38,6 @@ for sheet_name in sheet_names:
     indicators.append(df.columns[0])
     years.append(df.columns[4])
 
-names = []
-
-for sh_name in sheets[1:]:
-    df = other_file.parse(sh_name)
-    names.append(df.columns[0])
-
 detailed_indicators = []
 for d_sheet in detailed_sheets:
     df = detailed_file.parse(d_sheet)
@@ -37,12 +45,11 @@ for d_sheet in detailed_sheets:
         detailed_indicators.append(df.columns[0])
 
 # Create a Dash app instance
-app = Dash(__name__, external_stylesheets=['dash.css'])
+app = Dash(__name__)
 
 # Remove duplicates from the lists
 years = list(set(years))
 indicators = list(set(indicators))
-names = list(set(names))
 
 p2 = """
 This report highlights the findings of the Seasonal Agricultural Survey (SAS) for the agricultural year 
@@ -65,9 +72,19 @@ item_list = [
 ]
 # Define the layout of the web application
 app.layout = html.Div([
-    html.Img(src='logo.png', style={'width': '100px', 'height': '100px'}),
-    html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)', style={'textAlign':'center'}),
-    html.H3(children='EXECUTIVE SUMMARY', style={'textAlign':'center'}),
+    html.Div(
+        [
+            html.Div(html.Img(src=app.get_asset_url('NISR-logo.jpg'), style={'width': '100px', 'height': '100px'})),
+            html.Div(
+                [
+                    html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)', style={'textAlign': 'center'}),
+                    html.H3(children='EXECUTIVE SUMMARY', style={'textAlign': 'center'})
+                ],
+                style={'padding-left': '350px'}
+            )
+        ],
+        style={'display': 'flex', 'flexDirection': 'row', 'alignItems': 'flex-start'}
+    ),
     html.Div([
         html.P(p1),
         html.P(p2),
@@ -82,7 +99,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='indicator-dropdown',
         options=[{'label': indicator, 'value': indicator} for indicator in indicators],
-        value=indicators[0]
+        value=indicators[0], style={'width': '500px', 'height': '40px'}
     ),
     dcc.Graph(figure={}, id='bar-chart-1'),
     html.Label('Choose year:'),
@@ -90,26 +107,29 @@ app.layout = html.Div([
     html.Label('Choose the data of your interest:'),
     dcc.Dropdown(
         id='names',
-        options=[{'label': name, 'value': name} for name in names],
-        value=names[0], className='custom-dropdown'
+        options={},
+        value="", style={'width': '500px', 'height': '40px'}
     ),
-    html.Label('Choose the crop of your interest:'),
-
     dcc.Graph(figure={}, id='pie-charts-1'),
-
+    html.P('The following figures demonstrates the findngs of the seasonal agricultural survey in every distict of Rwanda in the 2022.'),
+    html.P('You can explore the findings in every district of Rwanda by hovering over the the district of interest on the following maps of Rwanda generated based on agricultural seasons.'),
+    html.Label('Choose the indicator:'),
     dcc.Dropdown(
         id='detailed_indicator',
         options=[{'label': detailed_indicator, 'value': detailed_indicator} for detailed_indicator in detailed_indicators],
-        value=detailed_indicators[0], className='custom-dropdown'
+        value=detailed_indicators[0], style={'width': '500px', 'height': '40px'}
     ),
-
+    html.Label('Choose the dataset of your interest:'),
     dcc.Dropdown(
         id='chosen_detailed_indicator',
         options={},
-        value="", className='custom-dropdown'
+        value="",
+        style={'width': '500px', 'height': '40px'}
     ),
 
-    dcc.Graph(figure={}, id='detailed-charts')
+    dcc.Graph(figure={}, id='detailed-chart-1'),
+    dcc.Graph(figure={}, id='detailed-chart-2'),
+    dcc.Graph(figure={}, id='detailed-chart-3')
 ], style={'margin': '40px', 'font-family': 'Cambria, "Times New Roman", serif', 'font-size': '16px'})
 
 @app.callback(
@@ -138,17 +158,38 @@ def chart_updater(chosen_year, chosen_indicator):
     return figure
 
 @app.callback(
+    [Output('names', 'options'), Output('names', 'value')],
+    Input('years-dropdown', 'value')
+)
+# this updates the dropdown with dataset of selected indicator
+def check_year(year):
+    names = []
+    if year == 2021:
+        new_sheets = sheets[1:13]
+    else:
+        new_sheets = sheets[1:]
+    for sh_name in new_sheets:
+        df = other_file.parse(sh_name)
+        if df.columns[0] not in names:
+            names.append(df.columns[0])
+    options = [{'label': name, 'value': name} for name in names]
+    return options, names[0]
+
+@app.callback(
     Output('pie-charts-1', 'figure'),
     [Input('years-dropdown', 'value'), Input('names', 'value')]
 )
+# This updates the piecharts according to year and dataset selected
 def pie_updater_one(year, name):
     fig_pie = make_subplots(rows=1, cols=3, specs=[[{'type':'domain'}, {'type':'domain'}, {'type':'domain'}]], subplot_titles=("Season A", "Season B", "Season C"))
     for sheet in sheets[1:]:
         pie_df = other_file.parse(sheet)
-        if pie_df.columns[0] == name and year == pie_df.columns[4]:
+        if pie_df.columns[0] == name and year in pie_df.columns and 'Season A' in pie_df.columns:
             fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[1]].tolist()), 1, 1)
-            fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[2]].tolist()), 1, 2)
-            fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[3]].tolist()), 1, 3)
+        elif pie_df.columns[0] == name and year in pie_df.columns and 'Season B' in pie_df.columns:
+            fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[1]].tolist()), 1, 2)
+        elif pie_df.columns[0] == name and year in pie_df.columns and 'Season C' in pie_df.columns:
+            fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[1]].tolist()), 1, 3)
             break
     if fig_pie:
         fig_pie.update_layout(title_text=name)
@@ -160,6 +201,7 @@ def pie_updater_one(year, name):
     [Output('chosen_detailed_indicator', 'options'), Output('chosen_detailed_indicator', 'value')],
     Input('detailed_indicator', 'value')
 )
+# this updates the dropdown with dataset of selected indicator
 def update_drop_down(detailed_indicator):
     for sheet in detailed_sheets:
         detailed_df = detailed_file.parse(sheet)
@@ -168,31 +210,38 @@ def update_drop_down(detailed_indicator):
             return options, detailed_df.columns[1]
 
 @app.callback(
-    Output('detailed-charts', 'figure'),
+    [Output('detailed-chart-1', 'figure'), Output('detailed-chart-2', 'figure'), Output('detailed-chart-3', 'figure')],
     [Input('chosen_detailed_indicator', 'value'), Input('detailed_indicator', 'value')]
 )
+# This function updates the rwandan maps according to selected dataset
+def update_detailed_charts(indicator, detailed_indicator):
+    figure1, figure2, figure3 = None, None, None
+    for sheet in detailed_sheets[:13]:
+        detailed_f = detailed_file.parse(sheet)
+        if detailed_f.columns[0] == detailed_indicator and 'Season A' in detailed_f.columns:
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
+            detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})    
+            figure1 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
+                                    mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
+            figure1.update_layout(title=f'{indicator} in Season A')
+        elif detailed_f.columns[0] == detailed_indicator and 'Season B' in detailed_f.columns:
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
+            detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})
+            figure2 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
+                                    mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
+            figure2.update_layout(title=f'{indicator} in Season B')
+        elif detailed_f.columns[0] == detailed_indicator and 'Season C' in detailed_f.columns:
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
+            detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})
+            figure3 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
+                                    mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
+            figure3.update_layout(title=f'{indicator} in Season C')
+            break
+    return figure1, figure2, figure3
 
-def update_detailed_charts(detailed_indicator, indicator):
-    fig = make_subplots(rows=1, cols=3, specs=[[{'type':'domain'}, {'type':'domain'}, {'type':'domain'}]], subplot_titles=("Season A", "Season B", "Season C"))
-    figure = make_subplots(rows=1, cols=1, specs=[[{'type': 'xy'}]], subplot_titles=("Indicator"))
-    for sheet in detailed_sheets:
-        detailed_df = detailed_file.parse(sheet)
-        if '%' in detailed_df.columns[0] and detailed_df.columns[0] == indicator and detailed_indicator in detailed_df.columns:
-            if 'Season A' in detailed_df.columns:
-                fig.add_trace(go.Pie(labels=detailed_df[detailed_df.columns[0]].tolist(), values=detailed_df[detailed_indicator].tolist()), 1, 1)
-            elif 'Season B' in detailed_df.columns:
-                fig.add_trace(go.Pie(labels=detailed_df[detailed_df.columns[0]].tolist(), values=detailed_df[detailed_indicator].tolist()), 1, 2)
-            elif 'Season C' in detailed_df.columns:
-                fig.add_trace(go.Pie(labels=detailed_df[detailed_df.columns[0]].tolist(), values=detailed_df[detailed_indicator].tolist()), 1, 3)
-                return fig
-        elif detailed_indicator in detailed_df.columns and detailed_df.columns[0] == indicator:
-            if 'Season A' in detailed_df.columns:
-                figure.add_trace(go.Bar(x=detailed_df[detailed_df.columns[0]], y=detailed_df[detailed_indicator], name='Season A'), row=1, col=1)
-            elif 'Season B' in detailed_df.columns:
-                figure.add_trace(go.Bar(x=detailed_df[detailed_df.columns[0]], y=detailed_df[detailed_indicator], name='Season B'), row=1, col=1)
-            elif 'Season C' in detailed_df.columns:
-                figure.add_trace(go.Bar(x=detailed_df[detailed_df.columns[0]], y=detailed_df[detailed_indicator], name='Season C'), row=1, col=1)
-                return figure
 
 
 if __name__ == '__main__':

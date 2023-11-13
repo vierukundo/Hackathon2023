@@ -30,13 +30,12 @@ for feature in Rwanda_districts['features']:
 
 # Initialize lists for indicators and years
 indicators = []
-years = []
+years = [year for year in ['SAS 2022', 'SAS 2021', 'SAS 2020']]
 
 # Iterate through the sheets to gather indicator and year data
 for sheet_name in sheet_names:
     df = excel_file.parse(sheet_name)
     indicators.append(df.columns[0])
-    years.append(df.columns[4])
 
 detailed_indicators = []
 for d_sheet in detailed_sheets:
@@ -137,7 +136,7 @@ app.layout = html.Div([
     [Input('year-dropdown', 'value'), Input('indicator-dropdown', 'value')]
 )
 def chart_updater(chosen_year, chosen_indicator):
-    figure = make_subplots(rows=1, cols=2, specs=[[{'type': 'xy'}, {'type': 'xy'}]], subplot_titles=("Indicator", "Rwanda Land cover classes"))
+    figure = make_subplots(rows=1, cols=2, specs=[[{'type': 'xy'}, {'type': 'xy'}]], subplot_titles=(f'{chosen_indicator}', "Rwanda Land cover classes"))
     for sheet_name in sheet_names:
         df = excel_file.parse(sheet_name)
         if df.columns[0] == chosen_indicator and df.columns[4] == chosen_year:
@@ -153,8 +152,12 @@ def chart_updater(chosen_year, chosen_indicator):
     
     figure.add_trace(figure2, row=1, col=2)
     figure.update_layout(
-        title_text=f'{chosen_year} - {chosen_indicator} in Seasons A, B, and C'
+        title_text=f'{chosen_year} - {chosen_indicator} in seasons A, B, and C', font=dict(family='Cambria, "Times New Roman", serif', size=16)
     )
+    figure.update_xaxes(title_text='Major crops', row=1, col=1)
+    figure.update_yaxes(title_text='Indicator', row=1, col=1)
+    figure.update_xaxes(title_text='Land class', row=1, col=2)
+    figure.update_yaxes(title_text='Area in hectares', row=1, col=2)
     return figure
 
 @app.callback(
@@ -192,7 +195,7 @@ def pie_updater_one(year, name):
             fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[pie_df.columns[1]].tolist()), 1, 3)
             break
     if fig_pie:
-        fig_pie.update_layout(title_text=name)
+        fig_pie.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16))
         fig_pie.update_traces(textposition='inside')
     return fig_pie
 
@@ -216,29 +219,29 @@ def update_drop_down(detailed_indicator):
 # This function updates the rwandan maps according to selected dataset
 def update_detailed_charts(indicator, detailed_indicator):
     figure1, figure2, figure3 = None, None, None
-    for sheet in detailed_sheets[:13]:
+    for sheet in detailed_sheets:
         detailed_f = detailed_file.parse(sheet)
         if detailed_f.columns[0] == detailed_indicator and 'Season A' in detailed_f.columns:
-            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(x if not np.isnan(x) and x != 0 else 1))
             detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
             detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})    
             figure1 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
                                     mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
-            figure1.update_layout(title=f'{indicator} in Season A')
+            figure1.update_layout(title=f'{indicator} in Season A', font=dict(family='Cambria, "Times New Roman", serif', size=16))
         elif detailed_f.columns[0] == detailed_indicator and 'Season B' in detailed_f.columns:
-            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(x if not np.isnan(x) and x != 0 else 1))
             detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
             detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})
             figure2 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
                                     mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
-            figure2.update_layout(title=f'{indicator} in Season B')
+            figure2.update_layout(title=f'{indicator} in Season B', font=dict(family='Cambria, "Times New Roman", serif', size=16))
         elif detailed_f.columns[0] == detailed_indicator and 'Season C' in detailed_f.columns:
-            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(int(x) if not np.isnan(x) else 0))
+            detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(x if not np.isnan(x) and x != 0 else 1))
             detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
             detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})
             figure3 = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
                                     mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
-            figure3.update_layout(title=f'{indicator} in Season C')
+            figure3.update_layout(title=f'{indicator} in Season C', font=dict(family='Cambria, "Times New Roman", serif', size=16))
             break
     return figure1, figure2, figure3
 

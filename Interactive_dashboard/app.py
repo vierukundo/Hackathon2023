@@ -11,17 +11,17 @@ from update_pie import pie_chart_updater
 from update_map import map_updater
 
 # Read the Excel file and get sheet names
-excel_file = pd.ExcelFile('Summary of SAS.xlsx')
-sheet_names = excel_file.sheet_names
+summary_file = pd.ExcelFile('Summary of SAS.xlsx')
+sheet_names = summary_file.sheet_names
 
-other_file = pd.ExcelFile('other_findings.xlsx')
-sheets = other_file.sheet_names
+districts_level_file = pd.ExcelFile('district_level.xlsx')
+sheets = districts_level_file.sheet_names
 
 detailed_file = pd.ExcelFile('Detailed_sas_file.xlsx')
 detailed_sheets = detailed_file.sheet_names
 
 # Initialize lists for indicators and years
-indicators = filter.filter_indicators(excel_file)
+indicators = filter.filter_indicators(summary_file)
 years = ['SAS 2020', 'SAS 2021', 'SAS 2022']
 
 detailed_indicators = filter.filter_indicators(detailed_file)
@@ -102,12 +102,9 @@ app.layout = html.Div([
     dcc.Graph(figure={}, id='detailed-chart-3')
 ], style={'margin': '30px', 'font-family': 'Cambria, "Times New Roman", serif', 'font-size': '16px'})
 
-bar_chart(app, excel_file, other_file)
-
-pie_chart_updater(app, other_file)
-
+bar_chart(app, summary_file, districts_level_file)
+pie_chart_updater(app, districts_level_file)
 map_updater(app, detailed_file)
-
 
 
 if __name__ == '__main__':

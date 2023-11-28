@@ -3,7 +3,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import filter
 
-def bar_chart(app, file, other_file):
+def bar_chart(app, summary_file, districts_level_file):
     @app.callback(
         Output('bar-chart-1', 'figure'),
         [Input('year-dropdown', 'value'), Input('indicator-dropdown', 'value')]
@@ -11,8 +11,8 @@ def bar_chart(app, file, other_file):
     
     def chart_updater(chosen_year, chosen_indicator):
         figure = make_subplots(rows=1, cols=2, specs=[[{'type': 'xy'}, {'type': 'xy'}]], subplot_titles=(f'{chosen_indicator}', "Rwanda Land cover classes"))
-        for sheet in file.sheet_names:
-            df = file.parse(sheet)
+        for sheet in summary_file.sheet_names:
+            df = summary_file.parse(sheet)
             if df.columns[0] == chosen_indicator and df.columns[4] == chosen_year:
                 break
             
@@ -21,7 +21,7 @@ def bar_chart(app, file, other_file):
         figure.add_trace(go.Bar(x=df[df.columns[0]], y=df[df.columns[2]], name=df.columns[2]), row=1, col=1)
         figure.add_trace(go.Bar(x=df[df.columns[0]], y=df[df.columns[3]], name=df.columns[3]), row=1, col=1)
             
-        df2 = other_file.parse('Sheet1')
+        df2 = districts_level_file.parse('Sheet1')
         figure2 = go.Bar(x=df2[df2.columns[0]], y=df2[df2.columns[1]])
         figure.add_trace(figure2, row=1, col=2)
         figure.update_layout(

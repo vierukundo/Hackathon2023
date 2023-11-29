@@ -4,6 +4,8 @@ import plotly.express as px
 import filter
 import numpy as np
 
+seasons = ['Season A', 'Season B', 'Season C']
+
 def map_updater(app, detailed_file):
     @app.callback(
         [Output('chosen_detailed_indicator', 'options'), Output('chosen_detailed_indicator', 'value')],
@@ -28,7 +30,7 @@ def map_updater(app, detailed_file):
         figures = []
         for sheet in detailed_file.sheet_names:
             detailed_f = detailed_file.parse(sheet)
-            if detailed_f.columns[0] == detailed_indicator and detailed_f.columns[-1] in detailed_f.columns:
+            if detailed_f.columns[0] == detailed_indicator and detailed_f.columns[-1] in seasons:
                 detailed_f['Density'] = pd.to_numeric(detailed_f[indicator], errors='coerce').apply(lambda x: np.log10(x if not np.isnan(x) and x != 0 else 1))
                 detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
                 detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})

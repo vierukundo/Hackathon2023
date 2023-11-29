@@ -11,7 +11,10 @@ x_axis = {
     "Share of pure crop in agricultural land": "Farmers category", "Agricultural inputs": "Agricultural inputs",
     "Agricultural practices": "Farmers", "Agricultural area": "Agricultural area",
     "Yield for major crops (Kg/ha)": "Major crops", "Production for major crops (MT)": "Major crops",
-    "Harvested area for major crops (Ha)": "Major crops", "Cultivated area for major crops (Ha)": "Major crops"
+    "Harvested area for major crops (Ha)": "Major crops", "Cultivated area for major crops (Ha)": "Major crops",
+    "Percentage of farmers by source of inorganic fertilizers": "Source of inorganic fertilizers", "Source of improved seeds (%)": "Source of improved seeds",
+    "Use of production by farmers and per crop type (%)": "Use of production", "Source of inorganic fertiliser by type of fertilizer (%)": "Source of inorganic fertiliser",
+    "Source of improved seeds by season per crop type in 2022 (%)": "Source of improved seeds"
 }
 
 # filter the content of Y-axis

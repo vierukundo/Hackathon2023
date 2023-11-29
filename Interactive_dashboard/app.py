@@ -14,8 +14,8 @@ from update_map import map_updater
 summary_file = pd.ExcelFile('Summary of SAS.xlsx')
 sheet_names = summary_file.sheet_names
 
-districts_level_file = pd.ExcelFile('district_level.xlsx')
-sheets = districts_level_file.sheet_names
+other_file = pd.ExcelFile('other_findings.xlsx')
+sheets = other_file.sheet_names
 
 detailed_file = pd.ExcelFile('Detailed_sas_file.xlsx')
 detailed_sheets = detailed_file.sheet_names
@@ -34,7 +34,7 @@ This Dashboard highlights the findings of the Seasonal Agricultural Survey (SAS)
 2021/2022. It covers three agricultural seasons; Season A which starts from September to February of the 
 following year and Season B which starts from March to June. Season C is the shortest agricultural season 
 with vegetables and sweet potato predominantly grown in swamps and Irish potato mostly grown in the 
-volcanic agro-ecological zone. This dashboard highlights mainly these:
+volcanic agro-ecological zone. This dashboard highlights mainly:
 """
 
 item_list = [
@@ -51,7 +51,7 @@ app.layout = html.Div([
                     html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)', style={'textAlign': 'center'}),
                     html.H3(children='EXECUTIVE SUMMARY', style={'textAlign': 'center'})
                 ],
-                style={'padding-left': '350px'}
+                style={'padding-left': '200px'}
             )
         ],
         style={'display': 'flex', 'flexDirection': 'row', 'alignItems': 'flex-start'}
@@ -60,7 +60,7 @@ app.layout = html.Div([
         html.P(p),
         html.Ul([
             html.Li(item) for item in item_list
-        ]),
+        ], style={"color": "blue", "fontStyle": "bold"}),
         html.P("The bar chart below illustrates the summary of Seasonal Agricultural Survey main indicators for the last three years.")
     ]),
     html.Label('Choose year:'),
@@ -74,9 +74,15 @@ app.layout = html.Div([
     dcc.Graph(figure={}, id='bar-chart-1'),
     html.Label('Choose year:'),
     dcc.RadioItems(options=[2021, 2022], value=2021, inline=True, id='years-dropdown'),
-    html.Label('Choose the data of your interest:'),
+    html.Label('Choose the indicator of your interest:'),
     dcc.Dropdown(
         id='names',
+        options={},
+        value="", style={'width': '500px', 'height': '40px'}
+    ),
+    html.Label('Choose the data of your interest:'),
+    dcc.Dropdown(
+        id='data',
         options={},
         value="", style={'width': '500px', 'height': '40px'}
     ),
@@ -102,8 +108,8 @@ app.layout = html.Div([
     dcc.Graph(figure={}, id='detailed-chart-3')
 ], style={'margin': '30px', 'font-family': 'Cambria, "Times New Roman", serif', 'font-size': '16px'})
 
-bar_chart(app, summary_file, districts_level_file)
-pie_chart_updater(app, districts_level_file)
+bar_chart(app, summary_file, other_file)
+pie_chart_updater(app, other_file)
 map_updater(app, detailed_file)
 
 

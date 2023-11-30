@@ -47,15 +47,15 @@ item_list = [
 app.layout = html.Div([
     html.Div(
         [
-            html.Div(html.Img(src=app.get_asset_url('NISR-logo.jpg'), style={'width': '100px', 'height': '100px'})),
+            html.Div(html.Img(src=app.get_asset_url('NISR-logo.jpg'), className="image")),
             html.Div(
                 [
-                    html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)', style={'textAlign': 'center'})
+                    html.H1(children='SEASONAL AGRICULTURAL SURVEY (SAS)')
                 ],
-                style={'padding-left': '200px'}
+                className="header"
             )
         ],
-        style={'display': 'flex', 'flexDirection': 'row', 'alignItems': 'flex-start'}
+        className="container"
     ),
     html.Div([
         html.P(p),
@@ -113,7 +113,7 @@ app.layout = html.Div([
     dcc.Graph(figure={}, id='detailed-chart-1'),
     dcc.Graph(figure={}, id='detailed-chart-2'),
     dcc.Graph(figure={}, id='detailed-chart-3')
-], style={'margin': '30px', 'font-family': 'Cambria, "Times New Roman", serif', 'font-size': '16px'})
+], className="fonts")
 
 bar_chart(app, summary_file)
 pie_chart_updater(app, other_file)

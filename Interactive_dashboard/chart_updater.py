@@ -1,5 +1,4 @@
 from dash.dependencies import Input, Output
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import filter
 
@@ -21,7 +20,7 @@ def bar_chart(app, summary_file):
         figure.add_trace(go.Bar(x=df[df.columns[0]], y=df[df.columns[3]], name=df.columns[3]))
 
         figure.update_layout(
-            title_text=f'{chosen_year} - {chosen_indicator} in seasons A, B, and C', xaxis=dict(showgrid=True), font=dict(family='Cambria, "Times New Roman", serif', size=16)
+            title_text=f'{chosen_year} - {chosen_indicator} in seasons A, B, and C', font=dict(family='Cambria, "Times New Roman", serif', size=16)
             )
         figure.update_xaxes(title_text=filter.filter_X_axis(chosen_indicator))
         figure.update_yaxes(title_text=filter.filter_Y_axis(chosen_indicator))

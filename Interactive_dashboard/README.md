@@ -4,11 +4,15 @@ This Dash web application provides visualizations and insights derived from the 
 
 # Getting Started
 
-# Prerequisites
+# Prerequisites and Installation
 
 Make sure you have the required Python libraries installed. You can install them using the following:
 
 pip install dash pandas plotly openpyxl numpy
+
+Note: This app uses dash version 2.14 or later.
+
+If you're using Dash version 2.13 or earlier, you need to include __name__ in your Dash constructor when running in order to render on the css files on app layout.
 
 # Running the Application
 
@@ -20,7 +24,7 @@ git clone https://github.com/vierukundo/Hackathon2023.git
 
 cd Hackathon2023/Interactive_dashboard
 
-Run the Dash application script.
+# Run the Dash application script by running this command.
 
 python app.py
 

@@ -1,9 +1,5 @@
 from dash import Dash, html, dcc
 import pandas as pd
-import dash
-from dash.dependencies import Input, Output
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 import numpy as np
 import filter
 from chart_updater import bar_chart
@@ -27,7 +23,7 @@ years = ['SAS 2020', 'SAS 2021', 'SAS 2022']
 detailed_indicators = filter.filter_indicators(detailed_file)
 
 # Create a Dash app instance
-app = dash.Dash(__name__)
+app = Dash(__name__)
 
 p = """
 This Dashboard highlights the findings of the Seasonal Agricultural Survey (SAS) for the agricultural year 
@@ -98,7 +94,7 @@ app.layout = html.Div([
     dcc.Graph(figure={}, id='pie-charts-1'),
     html.H3("This section demostrates agricultural performance across Rwanda's districts in 2022."),
     html.P(p3),
-    html.H4("Hover over each map to explore the findings!"),
+    html.H4("Hover over each map to explore the findings in different districts!"),
     html.Label('Choose the indicator:', className="labels"),
     dcc.Dropdown(
         id='detailed_indicator',

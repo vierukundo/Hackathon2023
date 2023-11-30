@@ -78,6 +78,6 @@ def pie_chart_updater(app, other_file):
             fig_line.update_xaxes(title_text="Land class", row=1, col=2)
             fig_line.update_yaxes(title_text="Area in (%)", row=1, col=2, range=[0, 100])
         fig = fig_pie if len(fig_pie['data']) == 3 else fig_line
-        fig.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16), height=500)
+        fig.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16), height=450)
 
         return fig

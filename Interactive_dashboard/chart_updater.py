@@ -23,9 +23,10 @@ def bar_chart(app, summary_file, other_file):
 
         # create the second chart on second column  
         df2 = other_file.parse('Sheet1')
+        df2 = df2.sort_values(by=df2.columns[1])
         figure.add_trace(go.Bar(x=df2[df2.columns[0]], y=df2[df2.columns[1]]), row=1, col=2)
         figure.update_layout(
-            title_text=f'{chosen_year} - {chosen_indicator} in seasons A, B, and C', font=dict(family='Cambria, "Times New Roman", serif', size=16)
+            title_text=f'{chosen_year} - {chosen_indicator} in seasons A, B, and C', font=dict(family='Cambria, "Times New Roman", serif', size=16), height=600
             )
         figure.update_xaxes(title_text=filter.filter_X_axis(chosen_indicator), row=1, col=1)
         figure.update_yaxes(title_text=filter.filter_Y_axis(chosen_indicator), row=1, col=1)

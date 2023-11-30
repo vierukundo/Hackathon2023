@@ -68,6 +68,6 @@ def pie_chart_updater(app, other_file):
                 fig_line.update_xaxes(title_text=filter_X_axis(name), row=1, col= i + 1)
                 fig_line.update_yaxes(title_text="Percentage (%)", row=1, col= i + 1)
         fig = fig_pie if len(fig_pie['data']) == 3 else fig_line
-        fig.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16))
+        fig.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16), height=500)
 
         return fig

@@ -35,7 +35,7 @@ def map_updater(app, detailed_file):
                 detailed_f['id'] = detailed_f[detailed_f.columns[0]].apply(lambda x: district_id_map.get(x, None))
                 detailed_f = detailed_f.rename(columns={detailed_f.columns[0]: 'District'})
                 figure = px.choropleth_mapbox(detailed_f, geojson=Rwanda_districts, locations='id', color='Density', hover_data=['Density', indicator, detailed_f.columns[0]],
-                                               mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, zoom=7)
+                                               mapbox_style="carto-positron", center={"lat": -1.9403, "lon": 29.8739}, custom_data='District', zoom=7)
                 figure.update_layout(title=f'{indicator} in {detailed_f.columns[-3]}', font=dict(family='Cambria, "Times New Roman", serif', size=16))
                 figures.append(figure)
                 if len(figures) == 3:

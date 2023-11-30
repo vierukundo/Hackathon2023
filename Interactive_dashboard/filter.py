@@ -49,3 +49,13 @@ def filter_map():
         feature['id'] = str(feature['properties']['ID_2'])
         district_id_map[feature['properties']['NAME_2']] = feature['id'] # store districts names and respective IDs
     return [Rwanda_districts, district_id_map]
+
+def get_units(indicator):
+    if 'Kg/Ha' in indicator:
+        return ('Kilograms per Hectare')
+    elif 'Area' or 'Ha' in indicator:
+        return 'Hectares'
+    elif 'Percentage' or '%' in indicator:
+        return 'Percentage (%)'
+    else:
+        return 'Metric tones (MT)'

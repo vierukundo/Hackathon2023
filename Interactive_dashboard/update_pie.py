@@ -34,7 +34,7 @@ def pie_chart_updater(app, other_file):
             pie_df = other_file.parse(sheet)
             if pie_df.columns[0] == name and year == pie_df.columns[-1]:
                 break
-        return pie_df.columns[:-2], pie_df.columns[1]
+        return pie_df.columns[1:-2], pie_df.columns[1]
     # This updates the piecharts according to year and dataset selected
     @app.callback(
         Output('pie-charts-1', 'figure'),
@@ -72,6 +72,11 @@ def pie_chart_updater(app, other_file):
             for i in range(3):
                 fig_line.update_xaxes(title_text=filter_X_axis(name), row=1, col= i + 1)
                 fig_line.update_yaxes(title_text="Percentage (%)", row=1, col= i + 1, range=[0, 100])
+        else:
+            fig_line.update_xaxes(title_text="Land class", row=1, col=1)
+            fig_line.update_yaxes(title_text="Area in hectares", row=1, col=1)
+            fig_line.update_xaxes(title_text="Land class", row=1, col=2)
+            fig_line.update_yaxes(title_text="Area in (%)", row=1, col=2, range=[0, 100])
         fig = fig_pie if len(fig_pie['data']) == 3 else fig_line
         fig.update_layout(title_text=name, font=dict(family='Cambria, "Times New Roman", serif', size=16), height=500)
 

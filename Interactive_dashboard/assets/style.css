@@ -1,0 +1,28 @@
+.radio_items {
+    font-size: '16px';
+    color: blue;
+    background-color: lightgray;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid darkgray;
+    display: inline-block
+}
+
+.dropdowns {
+        width: 500px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 2px solid darkgrey;
+        display: inline-block
+}
+
+.list {
+    color: blue;
+    font-style: italic;
+    font-weight: bold;
+}
+.labels {
+    color: blue;
+    font-style: italic;
+    font-weight: bold;
+}

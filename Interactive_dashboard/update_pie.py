@@ -58,7 +58,7 @@ def pie_chart_updater(app, other_file):
                 if season and len(pie_df.columns) < 7:
                     fig_pie.add_trace(go.Pie(labels=pie_df[pie_df.columns[0]].tolist(), values=pie_df[data].tolist()), 1, 1 + seasons.index(season))
                 elif season and len(pie_df.columns) >= 7:
-                    fig_line.add_trace(go.Scatter(x=pie_df[pie_df.columns[0]], y=pie_df[data], mode='lines+markers', name='markers'), 1, 1 + seasons.index(season))
+                    fig_line.add_trace(go.Scatter(x=pie_df[pie_df.columns[0]], y=pie_df[data], mode='lines+markers', name=season), 1, 1 + seasons.index(season))
                 else:
                     fig_line = make_subplots(rows=1, cols=2, specs=[[{'type':'xy'}, {'type':'xy'}]], subplot_titles=("Area", "Percentage (%)"), horizontal_spacing=0.1)
                     fig_line.add_trace(go.Scatter(x=pie_df[pie_df.columns[0]], y=pie_df[pie_df.columns[1]], mode='lines+markers', name='markers'), 1, 1)
